@@ -9,6 +9,7 @@ long duration;
 int distance;
 int safetyDistance;
 int dutyCyc = 400;
+
 //led 8 OUTPUT
 //trig 9
 //echo 10
@@ -30,7 +31,7 @@ int main (){
   // SETUP PWM TIMER 2
   TCCR2A = (1 << COM2A1) | (1 << WGM20) | (1 << WGM21);
   TIMSK2 = (1 << TOIE2);
-  OCR2A = 3999;
+  OCR2A = 250;
   TCCR2B = (1 << CS20);
   
   // SETUP EXTERNAL INTERRUPT INT0 TEPI NAIK
@@ -39,9 +40,7 @@ int main (){
 
   sei();
 
-
   while (1){
-
     // TRIG DI LOWKAN
     PORTB &= B11111101;
     _delay_ms(2);
@@ -55,11 +54,7 @@ int main (){
     distance= duration*0.034/2;
     safetyDistance = distance;
 
-    OCR2A = 3999 + dutyCyc;
-    _delay_ms(1000);
-    OCR2A = 1999 - dutyCyc;
-
-    if (safetyDistance <= 5){
+    if (safetyDistance <= 25){
       // TURN ON LED & BUZZ
       PORTB |= B00001001;
       PORTD = 0xFF;
@@ -69,8 +64,12 @@ int main (){
       PORTB &= B11111110; 
       PORTD = 0x0F;
     }
+    
+    dutyCyc = 400;
+    _delay_ms(250);
+    OCR2A = 1999 - dutyCyc;
 
-    _delay_ms(1000);
+    _delay_ms(1);
     if(dutyCyc >= 180){
       dutyCyc = 0;
     }
@@ -78,6 +77,8 @@ int main (){
 }
 
 ISR(TIMER2_OVF_vect){
+    OCR2A = 250;
+    OCR2A = 3999 + dutyCyc;
 }
 
 ISR(INT0_vect){
